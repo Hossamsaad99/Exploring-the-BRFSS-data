@@ -1,0 +1,92 @@
+---
+title: "Exploring the BRFSS data"
+output: 
+  html_document :
+    fig_height: 4
+    highlight: pygments
+    theme: spacelab
+---
+
+## Setup
+Before we start the Exploratory Data Analysis(EDA),we should first load the packages that would be required for Analysis process. In this case, the packages being dplyr(which provides us with the basic data manipulation tools) and ggplot2(which provides us with data ploting tools for Visualization), and tidyr (which provides us with data tidy tools for cleaning )and magrittr (which provides us with piping data variables), and pander (which provides us with data tables tools for table designing),and Kniter(which provides us with RMarkdown tools), and the data being The Behavioral Risk Factor Surveillance System (BRFSS) - 2013.
+
+### Load packages
+
+```{r load-packages, message = FALSE}
+library(ggplot2)
+library(dplyr)
+library(knitr)
+library(magrittr)
+library(tidyr)
+library(pander)
+```
+
+### Load data
+Note : the data must be stored in the same directory where we ’ll be saving our progress on the markdown file, using the load() function.
+```{r load-data}
+load("brfss2013")
+```
+
+
+
+* * *
+
+## Part 1: Data 
+Data were collected from all 50 U.S. states, Colombia, Puerto Rico, Guam, Samoa,Colombia, and States of Micronesia, by conducting surveys by both cellular and fixed-line .(DSS) Asymmetric stratified samples were used for the ground-line sample and cell phone respondents were randomly chosen with the possibility of equal selection for each of them. The dataset contains 330 variables and 491,775 observations samples in 2013.
+
+* * *
+
+## Part 2: Research questions
+
+**Research quesion 1:**
+Is there any association between income and health care coverage
+
+**Research quesion 2:**
+Does the distribution of the number of days in which physical and mental health was not good during the past 30 days differ by gender.
+
+**Research quesion 3:**
+Is there an association between the month in which a respondent was interviewed and the respondent’s self-reported health perception?
+
+* * *
+
+## Part 3: Exploratory data analysis
+
+
+**Research quesion 1:**
+I was trying to find out any exited pattern whether people respond their health condition differently in the different month. For example, are people more likely to say they are in good health in the spring or summer? It appears from graph that there was no obvious pattern.
+```{r}
+plot(brfss2013$income2, brfss2013$hlthpln1,col=c("red","black"), xlab = 'Income Level', ylab = 'Health Care Coverage', main =
+'Income Level versus Health Care Coverage')
+         
+```
+
+
+
+**Research quesion 2:**
+
+```{r}
+ggplot(aes(x=physhlth, fill=sex), data = brfss2013[!is.na(brfss2013$sex), ]) +
+  geom_histogram(bins=15, position = position_dodge()) + ggtitle('Number of Days Physical Health not Good in the Past 30 Days')
+```
+```{r}
+ggplot(aes(x=poorhlth, fill=sex), data=brfss2013[!is.na(brfss2013$sex), ]) +
+  geom_histogram(bins=15, position = position_dodge()) + ggtitle('Number of Days with Poor Physical Or Mental Health in the Past 30 Days')
+```
+
+
+
+
+**Research quesion 3:**
+
+```{r}
+by_month <- brfss2013 %>% filter(iyear=='2013') %>% group_by(imonth,genhlth) %>% summarise(n=n())
+ggplot(aes(x=imonth, y=n, fill = genhlth), data = by_month[!is.na(by_month$genhlth), ]) + geom_bar(stat = 'identity', position = position_dodge()) + ggtitle('Health Perception By Month')+theme(axis.text.x = element_text(angle = 60, hjust = 1))
+```
+
+```{r}
+by_month1 <- brfss2013 %>% filter(iyear=='2013') %>% group_by(imonth) %>% summarise(n=n())
+ggplot(aes(x=imonth, y=n), data=by_month1) + geom_bar(stat = 'identity',color="red",fill="blue") + ggtitle('Number of Respondents by Month')
+```
+
+##Summary
+When we analyze health survery data, we must be aware that self-reported prevalence may be biased because respondents may not be aware of their risk status There is no causation can be established as BRFSS is an observation study that can only establish correlation/association between variables.
